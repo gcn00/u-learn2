@@ -194,18 +194,26 @@
 
         .hero-visual {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             gap: 20px;
             animation: slideInRight 1s ease-out;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-visual {
+                flex-direction: column;
+            }
         }
 
         .learning-card {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
             border: 1px solid rgba(255,255,255,0.2);
             transition: all 0.3s ease;
+            width: 300px; /* Fixed width for equal-sized cards */
+            flex: 0 0 auto; /* Prevent cards from growing or shrinking */
         }
 
         .learning-card:hover {
@@ -216,7 +224,7 @@
         .learning-card img {
             width: 100%;
             border-radius: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
 
         .learning-card h4 {
@@ -563,12 +571,12 @@
                 </div>
                 <div class="hero-visual">
                     <div class="learning-card">
-                        <img src="/Images/Old-students-lo.jpg" alt="Current Students" />
+                        <img src="Images/Old-students-lo.jpg" alt="Current Students" />
                         <h4>For Current Students</h4>
                         <p>Access your courses, check grades, and continue your learning journey 24/7</p>
                     </div>
                     <div class="learning-card">
-                        <img src="/Images/main-students-lo.jpg" alt="New Students" />
+                        <img src="Images/main-students-lo.jpg" alt="New Students" />
                         <h4>Start Your Journey</h4>
                         <p>Join thousands of learners in our flexible, technology-enhanced education programs</p>
                     </div>
