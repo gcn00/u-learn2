@@ -1,0 +1,2065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U-Learn 24/7 - Student Dashboard</title>
+    <link rel="shortcut icon" href="/StudentPortal/Assets/icons/ama.png" />
+    <!-- Essential scripts and styles -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #800000;
+            --primary-light: #a52a2a;
+            --primary-dark: #4d0000;
+            --secondary: #f8faff;
+            --text-dark: #333;
+            --text-light: #666;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --card-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+            color: white;
+            padding: 6px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo-container img {
+            width: 28px;
+            height: auto;
+        }
+        
+        .logo-text {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        /* LMS Quick Access */
+        .lms-quick-access {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+        
+        .lms-button {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .lms-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Main Container */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+        
+        /* Sidebar - Reduced width */
+        .sidebar {
+            width: 200px;
+            background-color: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 99;
+        }
+        
+        .sidebar-header {
+            padding: 0 15px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+        
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 3px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+            font-size: 13px;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(128, 0, 0, 0.05);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+        
+        .nav-icon {
+            margin-right: 12px;
+            width: 18px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Dashboard Content */
+        .dashboard-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f8fafc;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-message {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        .date-display {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-auto-rows: minmax(80px, auto);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Card Styles - Optimized */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 15px;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background-color: rgba(128, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 14px;
+        }
+        
+        /* Specific Card Sizes */
+        .card-sm {
+            grid-column: span 3;
+        }
+        
+        .card-md {
+            grid-column: span 6;
+        }
+        
+        .card-lg {
+            grid-column: span 8;
+        }
+        
+        .card-xl {
+            grid-column: span 12;
+        }
+        
+        /* Progress Indicators - Compact */
+        .progress-container {
+            margin-top: 8px;
+        }
+        
+        .progress-bar-container {
+            height: 6px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-bar-success {
+            background-color: var(--success);
+        }
+        
+        .progress-bar-warning {
+            background-color: var(--warning);
+        }
+        
+        .progress-bar-danger {
+            background-color: var(--danger);
+        }
+        
+        .progress-bar-info {
+            background-color: var(--info);
+        }
+        
+        .progress-bar-primary {
+            background-color: var(--primary);
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-light);
+        }
+        
+        /* Course Cards - New compact design */
+        .course-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 12px;
+            margin-top: 4px;
+        }
+        
+        .course-card {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid #e9ecef;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .course-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+        
+        .course-card:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+        
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .course-info {
+            flex: 1;
+        }
+        
+        .course-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+            font-size: 14px;
+            line-height: 1.3;
+        }
+        
+        .course-instructor {
+            font-size: 12px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .course-schedule {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        .schedule-item i {
+            width: 12px;
+            color: var(--primary);
+            font-size: 10px;
+        }
+        
+        .course-grade {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            font-size: 11px;
+            margin-top: 12px;
+        }
+
+        .grade-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .grade-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 10px;
+        }
+
+        .grade-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 9px;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .grade-missing {
+            background-color: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+            font-size: 12px;
+        }
+        
+        .grade-a {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success);
+        }
+        
+        .grade-b {
+            background-color: rgba(23, 162, 184, 0.2);
+            color: var(--info);
+        }
+        
+        .grade-c {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #d39e00;
+        }
+        
+        .grade-d {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+        }
+        
+        .grade-incomplete {
+            background-color: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+        
+        /* Exam Countdown - Compact */
+        .countdown-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .countdown-item {
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 10px 6px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .countdown-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 3px;
+        }
+
+        .countdown-label {
+            font-size: 9px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .countdown-term {
+            font-size: 9px;
+            color: var(--text-light);
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        /* Curriculum Viewer with Course List */
+        .curriculum-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .stat-completed {
+            color: var(--success);
+        }
+        
+        .stat-required {
+            color: var(--info);
+        }
+        
+        .stat-incomplete {
+            color: var(--danger);
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+        
+        /* Term Course Lists */
+        .term-courses {
+            margin-top: 15px;
+        }
+        
+        .term-section {
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .term-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 10px 15px;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .term-stats {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        
+        .term-course-list {
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .term-course-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #dee2e6;
+        }
+        
+        .term-course-item.completed {
+            border-left-color: var(--success);
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+        
+        .term-course-item.incomplete {
+            border-left-color: var(--danger);
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+        
+        .term-course-info {
+            flex: 1;
+        }
+        
+        .term-course-name {
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-dark);
+        }
+        
+        .term-course-code {
+            font-size: 10px;
+            color: var(--text-light);
+        }
+        
+        .term-course-grade {
+            font-weight: 600;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        
+        .term-course-grade.grade-a {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success);
+        }
+        
+        .term-course-grade.grade-b {
+            background-color: rgba(23, 162, 184, 0.2);
+            color: var(--info);
+        }
+        
+        .term-course-grade.grade-c {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #d39e00;
+        }
+        
+        .term-course-grade.grade-incomplete {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+        }
+        
+        .term-course-grade.grade-pending {
+            background-color: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+        
+        /* Adviser Status Message */
+        .adviser-message {
+            background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .adviser-message:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary), var(--primary-light));
+        }
+        
+        .adviser-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .adviser-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .adviser-info h4 {
+            margin: 0;
+            font-size: 16px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        
+        .adviser-info p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .adviser-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-dark);
+            text-align: justify;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .status-indicator.warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #d39e00;
+        }
+        
+        .status-indicator.danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        /* Incomplete Courses */
+        .incomplete-list {
+            margin-top: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .incomplete-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            margin-bottom: 8px;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .incomplete-info {
+            flex: 1;
+        }
+        
+        .incomplete-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+            font-size: 13px;
+        }
+        
+        .incomplete-code {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+        
+        .incomplete-countdown {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 11px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .incomplete-countdown:hover {
+            background-color: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .incomplete-action {
+            font-size: 9px;
+            margin-top: 3px;
+            font-weight: normal;
+        }
+        
+        .incomplete-details {
+            display: flex;
+            flex-direction: column;
+            margin-top: 4px;
+            font-size: 10px;
+            color: var(--text-light);
+        }
+        
+        .incomplete-details span {
+            margin-bottom: 2px;
+        }
+        
+        .incomplete-details i {
+            margin-right: 4px;
+            color: var(--primary);
+        }
+        
+        /* Quick Links */
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .quick-link {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+        
+        .quick-link:hover {
+            background-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            color: var(--primary);
+        }
+        
+        .quick-link-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background-color: rgba(128, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            margin-right: 8px;
+            font-size: 12px;
+        }
+        
+        .quick-link-text {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Recent Notifications */
+        .notification-list {
+            margin-top: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            display: flex;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            margin-bottom: 8px;
+            transition: var(--transition);
+            border-left: 3px solid var(--info);
+        }
+        
+        .notification-item:hover {
+            background-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .notification-item.priority {
+            border-left-color: var(--danger);
+        }
+        
+        .notification-item.success {
+            border-left-color: var(--success);
+        }
+        
+        .notification-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background-color: rgba(128, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            margin-right: 10px;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+        
+        .notification-text {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        
+        .notification-time {
+            font-size: 10px;
+            color: var(--text-light);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .card-sm {
+                grid-column: span 4;
+            }
+            
+            .card-md {
+                grid-column: span 6;
+            }
+            
+            .card-lg {
+                grid-column: span 12;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .card-sm {
+                grid-column: span 6;
+            }
+            
+            .card-md {
+                grid-column: span 12;
+            }
+            
+            .quick-links {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .course-list {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+            }
+            
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                height: 65px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                z-index: 999;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .sidebar-header {
+                display: none;
+            }
+            
+            .nav-icon {
+                margin-right: 0;
+                margin-bottom: 4px;
+                font-size: 14px;
+            }
+            
+            .nav-text {
+                font-size: 9px;
+            }
+            
+            .dashboard-content {
+                padding-bottom: 80px;
+                padding: 12px 12px 80px 12px;
+            }
+            
+            .card-sm, .card-md, .card-lg, .card-xl {
+                grid-column: span 12;
+            }
+            
+            .welcome-message {
+                font-size: 18px;
+            }
+            
+            .course-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-links {
+                grid-template-columns: 1fr;
+            }
+            
+            .countdown-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px;
+            }
+            
+            .countdown-item {
+                padding: 8px 4px;
+            }
+            
+            .countdown-value {
+                font-size: 16px;
+            }
+            
+            .lms-quick-access {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-content {
+                padding: 0 12px;
+            }
+            
+            .logo-text {
+                font-size: 14px;
+            }
+            
+            .dashboard-content {
+                padding: 10px 10px 80px 10px;
+            }
+            
+            .dashboard-grid {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="/StudentPortal/Assets/icons/ama.png" alt="AMA Logo">
+                <div class="logo-text">U-Learn 24/7 Student Dashboard</div>
+            </div>
+            <div class="lms-quick-access">
+                <a href="#" class="lms-button" id="main-lms">
+                    <i class="fas fa-graduation-cap"></i> Main LMS
+                </a>
+                <a href="#" class="lms-button" id="exam-lms">
+                    <i class="fas fa-clipboard-check"></i> Exam LMS
+                </a>
+                <a href="#" class="lms-button" id="incomplete-lms">
+                    <i class="fas fa-exclamation-circle"></i> Incomplete LMS
+                </a>
+            </div>
+            <div class="user-menu">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">5</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">JS</div>
+                    <div class="user-name">John Smith</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <!-- <div class="sidebar-title">Navigation</div> -->
+                <button class="toggle-sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-home nav-icon"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-book nav-icon"></i>
+                        <span class="nav-text">Courses</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-calendar-alt nav-icon"></i>
+                        <span class="nav-text">Schedule</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <span class="nav-text">Grades</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-graduation-cap nav-icon"></i>
+                        <span class="nav-text">Curriculum</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-user nav-icon"></i>
+                        <span class="nav-text">Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-sign-out-alt nav-icon"></i>
+                        <span class="nav-text">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <main class="dashboard-content">
+            <div class="dashboard-header">
+                <div class="welcome-message">Welcome back, John!</div>
+                <div class="date-display">Monday, June 10, 2024</div>
+            </div>
+            
+            
+            
+            <div class="dashboard-grid">
+
+                <!-- Adviser Status Message -->
+                <div class="adviser-message card card-md">
+                    <div class="adviser-header">
+                        <div class="adviser-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="adviser-info">
+                            <h4>Academic Adviser Update</h4>
+                            <p>Prof. Maria Santos - Academic Guidance Counselor</p>
+                        </div>
+                        <div class="status-indicator" id="student-status">
+                            <i class="fas fa-check-circle"></i>
+                            Good Standing
+                        </div>
+                    </div>
+                    <div class="adviser-content" id="adviser-message-content">
+                        <p>John, I'm pleased to see your continued academic progress this trimester. Your current GPA of 3.65 reflects your dedication and hard work. However, I notice you have 3 incomplete courses from previous trimesters that require immediate attention. Please prioritize completing these requirements, especially Software Engineering (IT-304) which has only 7 days remaining. Your performance in Web Development has been exceptional, and I encourage you to maintain this momentum in your remaining courses. Remember, staying on track with your curriculum is crucial for your graduation timeline. Don't hesitate to reach out if you need any academic support or guidance.</p>
+                    </div>
+                </div>
+                <!-- Combined Academic Progress & GPA Card -->
+                <div class="card card-sm">
+                    <div class="card-header">
+                        <div class="card-title">Academic Overview</div>
+                        <div class="card-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- GPA Section -->
+                    <div style="text-align: center; padding: 6px 0; margin-bottom: 12px;">
+                        <div style="font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 2px;">3.65</div>
+                        <div class="stat-label">Current GPA out of 4.0</div>
+                        <div class="progress-container" style="margin-top: 8px;">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar progress-bar-success" style="width: 91%;"></div>
+                            </div>
+                            <div class="progress-label">
+                                <span>Excellent Standing</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Term Progress -->
+                    <div class="progress-container">
+                        <div class="stat-label" style="margin-bottom: 4px;">2nd Trimester AY 2023-2024</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar progress-bar-primary" style="width: 65%;"></div>
+                        </div>
+                        <div class="progress-label">
+                            <span>65% Complete</span>
+                            <span>35 Days Left</span>
+                        </div>
+                    </div>
+
+                    <!-- Program Progress -->
+                    <div class="progress-container" style="margin-top: 12px;">
+                        <div class="stat-label" style="margin-bottom: 4px;">BS Information Technology</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar progress-bar-success" style="width: 72%;"></div>
+                        </div>
+                        <div class="progress-label">
+                            <span>72% Complete</span>
+                            <span>28% Remaining</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Links Card -->
+                <div class="card card-sm">
+                    <div class="card-header">
+                        <div class="card-title">Quick Links</div>
+                        <div class="card-icon">
+                            <i class="fas fa-link"></i>
+                        </div>
+                    </div>
+                    <div class="quick-links">
+                        <a href="#" class="quick-link">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="quick-link-text">Class Schedule</div>
+                        </a>
+                        <a href="#" class="quick-link">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="quick-link-text">Enrollment</div>
+                        </a>
+                        <a href="#" class="quick-link">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="quick-link-text">Payment</div>
+                        </a>
+                        <a href="#" class="quick-link">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <div class="quick-link-text">Library</div>
+                        </a>
+                        <a href="#" class="quick-link">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div class="quick-link-text">Support</div>
+                        </a>
+                        <a href="#" class="quick-link">
+                            <div class="quick-link-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="quick-link-text">Downloads</div>
+                        </a>
+                    </div>
+                </div>
+
+
+                <!-- Exam Countdown Card - Compact -->
+                <div class="card card-sm">
+                    <div class="card-header">
+                        <div class="card-title">Exam Countdown</div>
+                        <div class="card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="countdown-container">
+                        <div class="countdown-item">
+                            <div class="countdown-term">Prelim</div>
+                            <div class="countdown-value">7</div>
+                            <div class="countdown-label">Days Left</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-term">Midterm</div>
+                            <div class="countdown-value">28</div>
+                            <div class="countdown-label">Days Left</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-term">Pre-Final</div>
+                            <div class="countdown-value">42</div>
+                            <div class="countdown-label">Days Left</div>
+                        </div>
+                        <div class="countdown-item">
+                            <div class="countdown-term">Finals</div>
+                            <div class="countdown-value">63</div>
+                            <div class="countdown-label">Days Left</div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Incomplete Courses Card -->
+                <div class="card card-sm">
+                    <div class="card-header">
+                        <div class="card-title">Incomplete Courses</div>
+                        <div class="card-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="incomplete-list">
+                        <div class="incomplete-item">
+                            <div class="incomplete-info">
+                                <div class="incomplete-title">Data Structures and Algorithms</div>
+                                <div class="incomplete-code">IT-203 (2nd Year - 1st Trimester)</div>
+                                <div class="incomplete-details">
+                                    <span><i class="fas fa-calendar-alt"></i> Deadline: June 15, 2024</span>
+                                    <span><i class="fas fa-tasks"></i> Reason: IC NFE</span>
+                                </div>
+                            </div>
+                            <div class="incomplete-countdown" onclick="window.open('#', '_blank')">
+                                <div>7 days left</div>
+                                <div class="incomplete-action">Click to access LMS</div>
+                            </div>
+                        </div>
+                        <div class="incomplete-item">
+                            <div class="incomplete-info">
+                                <div class="incomplete-title">Advanced Database Systems</div>
+                                <div class="incomplete-code">IT-401 (3rd Year - 1st Trimester)</div>
+                                <div class="incomplete-details">
+                                    <span><i class="fas fa-calendar-alt"></i> Deadline: June 20, 2024</span>
+                                    <span><i class="fas fa-tasks"></i> Reason: IC Cisco</span>
+                                </div>
+                            </div>
+                            <div class="incomplete-countdown" onclick="window.open('#', '_blank')">
+                                <div>19 days left</div>
+                                <div class="incomplete-action">Click to access LMS</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer" style="margin-top: 12px; text-align: center; padding-top: 12px; border-top: 1px solid #e9ecef;">
+                        <div style="font-weight: 600; color: var(--danger); font-size: 13px;">Total Incomplete: 2 courses</div>
+                        <div style="font-size: 11px; color: var(--text-light); margin-top: 3px;">Complete all requirements before deadlines to avoid course failure</div>
+                    </div>
+                </div>
+
+
+                <!-- Recent Notifications Card -->
+                <div class="card card-md">
+                    <div class="card-header">
+                        <div class="card-title">Recent Notifications</div>
+                        <div class="card-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                    </div>
+                    <div class="notification-list">
+                        <div class="notification-item priority">
+                            <div class="notification-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Urgent: Assignment Due Soon</div>
+                                <div class="notification-text">Software Engineering (IT-304) final project submission deadline approaching in 7 days.</div>
+                                <div class="notification-time">30 minutes ago</div>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-icon">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Assignment Submitted</div>
+                                <div class="notification-text">Web Development (IT-306) final project has been successfully submitted.</div>
+                                <div class="notification-time">2 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Exam Schedule Updated</div>
+                                <div class="notification-text">Prelim examination schedule for all current courses has been posted in the portal.</div>
+                                <div class="notification-time">4 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="notification-item success">
+                            <div class="notification-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Grade Posted</div>
+                                <div class="notification-text">Mobile App Development (IT-310) midterm examination grade: B (86%) has been posted.</div>
+                                <div class="notification-time">Yesterday</div>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Payment Reminder</div>
+                                <div class="notification-text">Second installment payment for tuition fee is due on June 15, 2024.</div>
+                                <div class="notification-time">2 days ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current Courses Card - Updated with Schedule -->
+                <div class="card card-md">
+                    <div class="card-header">
+                        <div class="card-title">Current Courses</div>
+                        <div class="card-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                    </div>
+                    <div class="course-list">
+                        <div class="course-card">
+                            <div class="course-header">
+                                <div class="course-info">
+                                    <div class="course-title">IT-306 - Web Development</div>
+                                    <div class="course-instructor">Prof. Sarah Johnson</div>
+                                    <div class="course-schedule">
+                                        <div class="schedule-item">
+                                            <i class="fas fa-calendar-day"></i>
+                                            <span>Mon, Wed, Fri</span>
+                                        </div>
+                                        <div class="schedule-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>10:00 AM - 11:30 AM</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-grade">
+                                <div class="grade-section">
+                                    <span class="grade-label">Prelim</span>
+                                    <span class="grade-badge grade-a">A (95%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Midterm</span>
+                                    <span class="grade-badge grade-a">A (93%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Pre-Final</span>
+                                    <span class="grade-badge grade-b">B (88%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Final</span>
+                                    <span class="grade-badge grade-missing">—</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="course-card">
+                            <div class="course-header">
+                                <div class="course-info">
+                                    <div class="course-title">IT-302 - Database Management</div>
+                                    <div class="course-instructor">Dr. Michael Chen</div>
+                                    <div class="course-schedule">
+                                        <div class="schedule-item">
+                                            <i class="fas fa-calendar-day"></i>
+                                            <span>Tue, Thu</span>
+                                        </div>
+                                        <div class="schedule-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>1:00 PM - 2:30 PM</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-grade">
+                                <div class="grade-section">
+                                    <span class="grade-label">Prelim</span>
+                                    <span class="grade-badge grade-b">B (87%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Midterm</span>
+                                    <span class="grade-badge grade-b">B (84%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Pre-Final</span>
+                                    <span class="grade-badge grade-missing">—</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Final</span>
+                                    <span class="grade-badge grade-missing">—</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="course-card">
+                            <div class="course-header">
+                                <div class="course-info">
+                                    <div class="course-title">IT-405 - Network Security</div>
+                                    <div class="course-instructor">Prof. Amanda Rodriguez</div>
+                                    <div class="course-schedule">
+                                        <div class="schedule-item">
+                                            <i class="fas fa-calendar-day"></i>
+                                            <span>Wed, Fri</span>
+                                        </div>
+                                        <div class="schedule-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>3:00 PM - 4:30 PM</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-grade">
+                                <div class="grade-section">
+                                    <span class="grade-label">Prelim</span>
+                                    <span class="grade-badge grade-c">C (78%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Midterm</span>
+                                    <span class="grade-badge grade-c">C (75%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Pre-Final</span>
+                                    <span class="grade-badge grade-missing">—</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Final</span>
+                                    <span class="grade-badge grade-missing">—</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="course-card">
+                            <div class="course-header">
+                                <div class="course-info">
+                                    <div class="course-title">IT-310 - Mobile App Development</div>
+                                    <div class="course-instructor">Dr. Kevin Park</div>
+                                    <div class="course-schedule">
+                                        <div class="schedule-item">
+                                            <i class="fas fa-calendar-day"></i>
+                                            <span>Mon, Thu</span>
+                                        </div>
+                                        <div class="schedule-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>8:30 AM - 10:00 AM</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="course-grade">
+                                <div class="grade-section">
+                                    <span class="grade-label">Prelim</span>
+                                    <span class="grade-badge grade-a">A (90%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Midterm</span>
+                                    <span class="grade-badge grade-b">B (86%)</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Pre-Final</span>
+                                    <span class="grade-badge grade-missing">—</span>
+                                </div>
+                                <div class="grade-section">
+                                    <span class="grade-label">Final</span>
+                                    <span class="grade-badge grade-missing">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <!-- Curriculum Viewer Card with Course Lists -->
+                <div class="card card-md">
+                    <div class="card-header">
+                        <div class="card-title">Curriculum Progress</div>
+                        <div class="card-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                    </div>
+                    <div class="curriculum-stats">
+                        <div class="stat-item">
+                            <div class="stat-value stat-completed">24</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value stat-required">12</div>
+                            <div class="stat-label">Current</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value stat-incomplete">2</div>
+                            <div class="stat-label">Incomplete</div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar progress-bar-success" style="width: 63%;"></div>
+                        </div>
+                        <div class="progress-label">
+                            <span>24/38 Courses Completed</span>
+                            <span>63%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Term Course Lists -->
+                    <div class="term-courses">
+                        <!-- 1st Year -->
+                        <div class="term-section">
+                            <div class="term-header">
+                                <span>1st Year - 1st Trimester</span>
+                                <span class="term-stats">6/6 Completed</span>
+                            </div>
+                            <div class="term-course-list">
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Introduction to Computing</div>
+                                        <div class="term-course-code">IT-101</div>
+                                    </div>
+                                    <div class="term-course-grade grade-a">A (95%)</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Mathematics for IT</div>
+                                        <div class="term-course-code">MATH-101</div>
+                                    </div>
+                                    <div class="term-course-grade grade-b">B (87%)</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">English Communication</div>
+                                        <div class="term-course-code">ENG-101</div>
+                                    </div>
+                                    <div class="term-course-grade grade-a">A (92%)</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Physical Education</div>
+                                        <div class="term-course-code">PE-101</div>
+                                    </div>
+                                    <div class="term-course-grade grade-a">A (94%)</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Filipino</div>
+                                        <div class="term-course-code">FIL-101</div>
+                                    </div>
+                                    <div class="term-course-grade grade-b">B (85%)</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">National Service Training Program</div>
+                                        <div class="term-course-code">NSTP-101</div>
+                                    </div>
+                                    <div class="term-course-grade grade-a">A (96%)</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2nd Year -->
+                        <div class="term-section">
+                            <div class="term-header">
+                                <span>2nd Year - 1st Trimester</span>
+                                <span class="term-stats">5/6 Completed, 1 Incomplete</span>
+                            </div>
+                            <div class="term-course-list">
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Object Oriented Programming</div>
+                                        <div class="term-course-code">IT-201</div>
+                                    </div>
+                                    <div class="term-course-grade grade-a">A (91%)</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Web Programming</div>
+                                        <div class="term-course-code">IT-202</div>
+                                    </div>
+                                    <div class="term-course-grade grade-b">B (88%)</div>
+                                </div>
+                                <div class="term-course-item incomplete">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Data Structures and Algorithms</div>
+                                        <div class="term-course-code">IT-203</div>
+                                    </div>
+                                    <div class="term-course-grade grade-incomplete">INC</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Systems Analysis</div>
+                                        <div class="term-course-code">IT-204</div>
+                                    </div>
+                                    <div class="term-course-grade grade-b">B (84%)</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Discrete Mathematics</div>
+                                        <div class="term-course-code">MATH-201</div>
+                                    </div>
+                                    <div class="term-course-grade grade-c">C (78%)</div>
+                                </div>
+                                <div class="term-course-item completed">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Business Management</div>
+                                        <div class="term-course-code">BUS-201</div>
+                                    </div>
+                                    <div class="term-course-grade grade-b">B (86%)</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Current Trimester -->
+                        <div class="term-section">
+                            <div class="term-header">
+                                <span>3rd Year - 2nd Trimester (Current)</span>
+                                <span class="term-stats">0/4 Completed - In Progress</span>
+                            </div>
+                            <div class="term-course-list">
+                                <div class="term-course-item">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Web Development</div>
+                                        <div class="term-course-code">IT-306</div>
+                                    </div>
+                                    <div class="term-course-grade grade-pending">In Progress</div>
+                                </div>
+                                <div class="term-course-item">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Database Management</div>
+                                        <div class="term-course-code">IT-302</div>
+                                    </div>
+                                    <div class="term-course-grade grade-pending">In Progress</div>
+                                </div>
+                                <div class="term-course-item">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Network Security</div>
+                                        <div class="term-course-code">IT-405</div>
+                                    </div>
+                                    <div class="term-course-grade grade-pending">In Progress</div>
+                                </div>
+                                <div class="term-course-item">
+                                    <div class="term-course-info">
+                                        <div class="term-course-name">Mobile App Development</div>
+                                        <div class="term-course-code">IT-310</div>
+                                    </div>
+                                    <div class="term-course-grade grade-pending">In Progress</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                
+                
+                
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Performance optimizations
+        const debounce = (func, wait) => {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        };
+
+        // Initialize date with better performance
+        const updateDate = () => {
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateElement = document.querySelector('.date-display');
+            if (dateElement) {
+                dateElement.textContent = today.toLocaleDateString('en-US', options);
+            }
+        };
+        
+        // Update date immediately and set interval for real-time updates
+        updateDate();
+        
+        // Toggle sidebar with performance optimization
+        const toggleSidebar = debounce(() => {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('sidebar-collapsed');
+                // Save state to localStorage for persistence
+                try {
+                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('sidebar-collapsed'));
+                } catch (e) {
+                    // Handle localStorage not available
+                    console.log('localStorage not available');
+                }
+            }
+        }, 100);
+        
+        // Initialize sidebar state
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
+                if (sidebarCollapsed === 'true') {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        sidebar.classList.add('sidebar-collapsed');
+                    }
+                }
+            } catch (e) {
+                console.log('localStorage not available');
+            }
+        });
+        
+        // Add event listener for sidebar toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.querySelector('.toggle-sidebar');
+            if (toggleButton) {
+                toggleButton.addEventListener('click', toggleSidebar);
+            }
+        });
+        
+        // Initialize curriculum chart with error handling and performance optimization
+        function initializeChart() {
+            // Use requestAnimationFrame for better performance
+            requestAnimationFrame(() => {
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js not loaded');
+                    return;
+                }
+                
+                const canvas = document.getElementById('curriculumChart');
+                if (!canvas) {
+                    return;
+                }
+                
+                // Destroy any existing chart instance
+                let chartInstance = Chart.getChart(canvas);
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+                
+                try {
+                    const ctx = canvas.getContext('2d');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Completed', 'Current', 'Incomplete'],
+                            datasets: [{
+                                data: [24, 12, 2],
+                                backgroundColor: [
+                                    '#28a745',
+                                    '#17a2b8',
+                                    '#dc3545'
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            animation: {
+                                duration: 600,
+                                easing: 'easeOutQuart'
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 10,
+                                        padding: 12,
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                }
+                            },
+                            layout: {
+                                padding: 8
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error creating chart:', error);
+                }
+            });
+        }
+        
+        // Initialize chart when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeChart);
+        } else {
+            initializeChart();
+        }
+        
+        // LMS Quick Access Buttons with error handling
+        const initializeLMSButtons = () => {
+            const buttons = [
+                { id: 'main-lms', url: 'https://main-lms.example.com' },
+                { id: 'exam-lms', url: 'https://exam-lms.example.com' },
+                { id: 'incomplete-lms', url: 'https://incomplete-lms.example.com' }
+            ];
+            
+            buttons.forEach(({ id, url }) => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        try {
+                            window.open(url, '_blank');
+                        } catch (error) {
+                            console.error('Error opening LMS:', error);
+                        }
+                    });
+                }
+            });
+        };
+        
+        // Initialize LMS buttons
+        document.addEventListener('DOMContentLoaded', initializeLMSButtons);
+        
+        // Simulate AJAX call for adviser message
+        const loadAdviserMessage = async () => {
+            try {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Simulate different status messages from backend
+                const statusMessages = [
+                    {
+                        status: 'Good Standing',
+                        statusClass: '',
+                        message: `John, I'm pleased to see your continued academic progress this trimester. Your current GPA of 3.65 reflects your dedication and hard work. However, I notice you have 3 incomplete courses from previous trimesters that require immediate attention. Please prioritize completing these requirements, especially Software Engineering (IT-304) which has only 7 days remaining. Your performance in Web Development has been exceptional, and I encourage you to maintain this momentum in your remaining courses. Remember, staying on track with your curriculum is crucial for your graduation timeline. Don't hesitate to reach out if you need any academic support or guidance.`
+                    },
+                    {
+                        status: 'Academic Warning',
+                        statusClass: 'warning',
+                        message: `John, I'm concerned about your recent academic performance and the accumulation of incomplete courses. With 3 outstanding requirements and approaching deadlines, immediate action is required to avoid academic probation. Please schedule an appointment with me this week to discuss a remedial plan. Focus on completing Software Engineering (IT-304) first as it has the nearest deadline. Your Web Development grade shows you have the capability - we need to channel that energy into all your subjects.`
+                    }
+                ];
+                
+                // Randomly select a message (in real implementation, this would come from backend)
+                const selectedMessage = statusMessages[0]; // Using first message for demo
+                
+                // Update the UI
+                const statusElement = document.getElementById('student-status');
+                const messageElement = document.getElementById('adviser-message-content');
+                
+                if (statusElement && messageElement) {
+                    statusElement.className = `status-indicator ${selectedMessage.statusClass}`;
+                    statusElement.innerHTML = `<i class="fas fa-check-circle"></i> ${selectedMessage.status}`;
+                    messageElement.innerHTML = `<p>${selectedMessage.message}</p>`;
+                }
+                
+            } catch (error) {
+                console.error('Error loading adviser message:', error);
+                // Fallback message
+                const messageElement = document.getElementById('adviser-message-content');
+                if (messageElement) {
+                    messageElement.innerHTML = '<p>Unable to load adviser message at this time. Please check back later or contact your academic adviser directly.</p>';
+                }
+            }
+        };
+        
+        // Load adviser message on page load
+        document.addEventListener('DOMContentLoaded', loadAdviserMessage);
+        
+        // Make incomplete course items clickable with better error handling
+        const initializeIncompleteItems = () => {
+            const incompleteItems = document.querySelectorAll('.incomplete-countdown');
+            incompleteItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    try {
+                        window.open('https://incomplete-lms.example.com', '_blank');
+                    } catch (error) {
+                        console.error('Error opening incomplete LMS:', error);
+                    }
+                });
+            });
+        };
+        
+        document.addEventListener('DOMContentLoaded', initializeIncompleteItems);
+        
+        // Performance optimization: Lazy load non-critical animations
+        const observerCallback = (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        };
+        
+        // Intersection Observer for performance
+        const observer = new IntersectionObserver(observerCallback, {
+            threshold: 0.1
+        });
+        
+        // Observe cards for animation optimization
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+        
+        // Add smooth scrolling for mobile navigation
+        const addSmoothScrolling = () => {
+            const navMenu = document.querySelector('.nav-menu');
+            if (navMenu && window.innerWidth <= 768) {
+                navMenu.style.scrollBehavior = 'smooth';
+            }
+        };
+        
+        document.addEventListener('DOMContentLoaded', addSmoothScrolling);
+        window.addEventListener('resize', debounce(addSmoothScrolling, 250));
+        
+        // Cleanup function for performance
+        window.addEventListener('beforeunload', () => {
+            // Cleanup chart instance
+            const canvas = document.getElementById('curriculumChart');
+            if (canvas) {
+                const chartInstance = Chart.getChart(canvas);
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
